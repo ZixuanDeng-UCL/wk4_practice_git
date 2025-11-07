@@ -1,0 +1,90 @@
+---
+title: "wk4_practical"
+output: html_document
+date: "2025-11-07"
+---
+library packages
+```{r}
+library(sf)
+library(tidyverse)
+library(here)
+library(dplyr)
+library(countrycode)
+library(janitor)
+```
+
+read in data
+```{r}
+
+world <- st_read(here("1107wk4","World_Countries_Generalized.shp"))
+all_dataset <- read_csv(here("1107wk4","HDR25_Composite_indices_complete_time_series (1).csv"),locale = locale(encoding = "latin1"),na = c(" ","","  "))
+
+```
+
+clean and select the data set
+
+attention:
+the difference between iso3 and iso2, so need to change.
+
+```{r}
+
+clean_dataset <- all_dataset %>%
+  select(iso3,country,hdi_2010,hdi_2019) %>%
+  mutate(diff_2010_2019 = hdi_2019 - hdi_2010) %>%
+  # change the iso3 to iso2
+  mutate(iso_code2 = countrycode(iso3, origin = "iso3c", destination = "iso2c"))%>%
+  mutate(iso_code = countrycode(country, origin = "country.name", destination = "iso2c"))
+
+```
+
+join the csv data to the spatial data
+
+```{r}
+
+# ISO
+
+world_joined <- world %>%
+  clean_names() %>%
+  left_join(.,
+            clean_dataset,
+            by = c("iso" = "iso_code2"))
+
+```
+
+```{r}
+# country
+
+world_joined2 <- world %>%
+  clean_names() %>%
+  left_join(.,
+            clean_dataset,
+            by = c("country" = "country"))
+```
+
+Extra: compare two methods
+
+```{r}
+
+world_joined_GB <- world_joined %>%
+  filter(aff_iso == "GB")
+
+world_joined_GB2 <- world_joined %>%
+  filter(aff_iso == "GB")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
